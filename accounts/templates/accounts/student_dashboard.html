@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - MMU Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Dashboard</h2>
+        <p class="mb-0">Welcome back, {{ user.username }}!</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'upload_notes' %}" class="btn btn-sm btn-primary"><i class="fas fa-upload me-1"></i> Upload Notes</a>
+        <a href="{% url 'download_notes' %}" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-download me-1"></i> Download Notes</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-sm-6 col-xl-4 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row d-block d-xl-flex align-items-center">
+                    <div class="col-12 col-xl-5 px-xl-0">
+                        <div class="d-flex align-items-center">
+                            <div class="icon icon-shape icon-md icon-shape-primary rounded me-4">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="d-block">
+                                <h4 class="h5">Notes Uploaded</h4>
+                                <h3 class="mb-1">{{ user_notes_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row d-block d-xl-flex align-items-center">
+                    <div class="col-12 col-xl-5 px-xl-0">
+                        <div class="d-flex align-items-center">
+                            <div class="icon icon-shape icon-md icon-shape-secondary rounded me-4">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="d-block">
+                                <h4 class="h5">Total Downloads</h4>
+                                <h3 class="mb-1">{{ user_downloads_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row d-block d-xl-flex align-items-center">
+                    <div class="col-12 col-xl-5 px-xl-0">
+                        <div class="d-flex align-items-center">
+                            <div class="icon icon-shape icon-md icon-shape-success rounded me-4">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="d-block">
+                                <h4 class="h5">Featured Notes</h4>
+                                <h3 class="mb-1">{{ featured_notes_count }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-xl-8 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header border-bottom d-flex align-items-center justify-content-between">
+                <h2 class="fs-5 fw-bold mb-0">Recent Activities</h2>
+            </div>
+            <div class="card-body">
+                {% for activity in recent_activities %}
+                <div class="d-flex border-bottom pt-3">
+                    <div class="icon icon-shape icon-sm icon-shape-{{ activity.color }} rounded me-3">
+                        <i class="fas {{ activity.icon }}"></i>
+                    </div>
+                    <div class="d-block">
+                        <span class="fw-bold">{{ activity.message }}</span>
+                        <div class="small text-gray-500">{{ activity.time|timesince }} ago</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4">
+                    <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No recent activities yet</p>
+                    <a href="{% url 'upload_notes' %}" class="btn btn-sm btn-primary">Upload Your First Note</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-xl-4 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header border-bottom">
+                <h2 class="fs-5 fw-bold mb-0">Hall of Fame</h2>
+            </div>
+            <div class="card-body">
+                {% for note in hall_of_fame_notes %}
+                <div class="d-flex align-items-center mb-3">
+                    {% if note.uploaded_by.avatar %}
+                    <img src="{{ note.uploaded_by.avatar.url }}" class="rounded-circle me-3" width="40" height="40" alt="Avatar">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="d-block flex-grow-1">
+                        <h6 class="mb-0">{{ note.title }}</h6>
+                        <small class="text-muted">by {{ note.uploaded_by.username }}</small>
+                        <div class="small text-muted">{{ note.downloads }} downloads</div>
+                    </div>
+                    <div class="ms-auto">
+                        <span class="badge bg-warning"><i class="fas fa-trophy me-1"></i></span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-3">
+                    <i class="fas fa-trophy fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">No featured notes yet</p>
+                </div>
+                {% endfor %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'hall_of_fame' %}" class="btn btn-sm btn-outline-primary">View All Featured</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

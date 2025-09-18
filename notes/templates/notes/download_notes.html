@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Download Notes - MMU Portal{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Download Notes</h2>
+        <p class="mb-0">Browse and download study materials shared by students</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'upload_notes' %}" class="btn btn-sm btn-primary">
+            <i class="fas fa-upload me-1"></i>Upload Notes
+        </a>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="card card-body border-0 shadow mb-4">
+    <h2 class="h5 mb-4">Filter Notes</h2>
+    <form method="get">
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <label for="{{ filter_form.subject.id_for_label }}" class="form-label">Subject</label>
+                {{ filter_form.subject }}
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="{{ filter_form.semester.id_for_label }}" class="form-label">Semester</label>
+                {{ filter_form.semester }}
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="{{ filter_form.category.id_for_label }}" class="form-label">Category</label>
+                {{ filter_form.category }}
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="{{ filter_form.q.id_for_label }}" class="form-label">Search Notes</label>
+                <div class="input-group">
+                    {{ filter_form.q }}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-2 mb-3 d-flex align-items-end">
+                <a href="{% url 'download_notes' %}" class="btn btn-outline-secondary w-100">Clear Filters</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Results Section -->
+<div class="card card-body border-0 shadow">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Available Notes</h2>
+        <span class="badge bg-primary">{{ notes|length }} notes found</span>
+    </div>
+    
+    {% if notes %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Subject</th>
+                    <th>Semester</th>
+                    <th>Category</th>
+                    <th>Uploaded By</th>
+                    <th>Downloads</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in notes %}
+                <tr>
+                    <td>
+                        <span class="fw-bold">{{ note.title }}</span>
+                        {% if note.is_featured %}
+                        <span class="badge bg-warning ms-1"><i class="fas fa-trophy"></i> Featured</span>
+                        {% endif %}
+                        <br>
+                        <small class="text-muted">{{ note.description|truncatewords:10 }}</small>
+                    </td>
+                    <td>{{ note.subject.name }}</td>
+                    <td>{{ note.semester }}</td>
+                    <td>
+                        <span class="badge bg-secondary">{{ note.get_category_display }}</span>
+                    </td>
+                    <td>
+                        {% if note.uploaded_by.avatar %}
+                        <img src="{{ note.uploaded_by.avatar.url }}" class="rounded-circle me-1" width="20" height="20" alt="Avatar">
+                        {% endif %}
+                        {{ note.uploaded_by.username }}
+                        <br>
+                        <small class="text-muted">{{ note.uploaded_at|date:"M d, Y" }}</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-info">{{ note.downloads }}</span>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            {% if note.file.name|lower|slice:"-4:" == ".pdf" %}
+                            <a href="{% url 'preview_note' note.id %}" class="btn btn-outline-info" target="_blank" title="Preview">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'download_note_file' note.id %}" class="btn btn-primary" title="Download">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+                </li>
+            {% endif %}
+            
+            <li class="page-item active">
+                <span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    
+    {% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No notes found</h5>
+        <p class="text-muted">Try adjusting your filters or check back later for new uploads.</p>
+        <a href="{% url 'upload_notes' %}" class="btn btn-primary mt-2">Be the first to upload</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
